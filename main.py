@@ -1,13 +1,14 @@
-import clips
+from clips import Environment
 
 
 class Board:
     def __init__(self, size, list_bomb):
+        self.env = None
         self.size = size
         self.board = [[0 for i in range(size)] for j in range(size)]
         self.board_open = [[0 for i in range(size)] for j in range(size)]
         self.list_bomb = list_bomb
-        self.list_flag = list_flag
+        self.list_flag = []
         self.create_numbers()
 
     def __str__(self):
@@ -42,27 +43,42 @@ class Board:
     def mark_tile(self, t: tuple):
         i = t[0]
         j = t[1]
+        if self.board_open[i][j] == 1:
+            return
+        if self.board_open[i][j] == -1:
+            self.unmark_tile(t)
+            return
         self.board_open[i][j] = -1
 
-    def click_tile(self, t: tuple, base=True):
+    def unmark_tile(self, t: tuple):
         i = t[0]
         j = t[1]
+        if self.board_open[i][j] != -1:
+            return
+        self.board_open[i][j] = 0
+
+    def click_tile(self, i, j, base=True):
+        print('Click tile ({}, {})'.format(i,j))
         if base and self.board[i][j] == -1:
             print('Game Over')
+            exit(1)
             return
         if self.board_open[i][j] != 0:
             return
         self.board_open[i][j] = 1
         if self.board[i][j] != 0:
             return
-        base = False
         for x in range(-1, 2):
             for y in range(-1, 2):
                 if ((i + x >= 0) and (i + x < self.size) and (j + y >= 0) and (j + y < self.size)):
                     if (not self.board_open[i+x][j+y]):
-                        self.click_tile((i + x, j + y), base)
+                        self.click_tile(i + x, j + y, False)
+        if base:
+            print(self)
+            if self.env is not None:
+                self.assert_state(self.env)
 
-    def assert_state(self, env: clips.Environment):
+    def assert_state(self, env):
         for i in range(self.size):
             for j in range(self.size):
                 if self.board_open[i][j] == 1:
@@ -84,13 +100,18 @@ if __name__ == "__main__":
     board = Board(size, list_bomb)
     print(board)
     print()
-    # board.click_tile((0,6))
-    board.click_tile((0, 0))
+    # board.click_tile(0,6)
+    board.click_tile(0, 0)
+    # board.mark_tile((0, 6))
+    # board.unmark_tile((0, 6))
 
-    env = clips.Environment()
-    # env.load('minesweeper.clp')
+    env = Environment()
+    board.env = env
+    env.define_function(board.click_tile, 'click_tile')
+    env.load('minesweeper.clp')
     board.assert_state(env)
-    # env.reset()
+    env.reset()
+    env.run()
     for fact in env.facts():
         print(fact)
     print(board)
