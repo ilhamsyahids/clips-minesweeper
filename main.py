@@ -1,13 +1,12 @@
 from clips import Environment
 
-
 class Board:
     def __init__(self, size, list_bomb):
         self.env = None
         self.size = size
-        self.board = [[0 for i in range(size)] for j in range(size)]
-        self.board_open = [[0 for i in range(size)] for j in range(size)]
-        self.board_open_asserted = [[False for i in range(size)] for j in range(size)]
+        self.board = [[0 for _ in range(size)] for _ in range(size)]
+        self.board_open = [[0 for _ in range(size)] for _ in range(size)]
+        self.board_open_asserted = [[False for _ in range(size)] for _ in range(size)]
         self.list_bomb = list_bomb
         self.list_flag = []
         self.create_numbers()
@@ -18,9 +17,9 @@ class Board:
             for j in range(self.size):
                 if self.board_open[i][j] == 1:
                     s += str(self.board[i][j]
-                             ) if self.board[i][j] != -1 else '*'
+                             ) if self.board[i][j] != -1 else 'X'
                 elif self.board_open[i][j] == -1:
-                    s += 'X'
+                    s += '*'
                 else:
                     s += '?'
                 s += ' '
@@ -68,8 +67,12 @@ class Board:
             return
 
         if base and self.board[i][j] == -1:
+            self.board_open[i][j] = 1
             print('Game Over')
-            exit(1)
+            if self.env is not None:
+                self.env.assert_string('(stop)')
+            else:
+                exit(1)
             return
         if self.board_open[i][j] != 0:
             return
@@ -83,12 +86,19 @@ class Board:
                         self.click_tile(i + x, j + y, False)
 
     def click_tile_env(self, i, j):
+<<<<<<< HEAD
         try:
             self.click_tile(i, j)
             if self.env is not None:
                 self.assert_state(self.env)
         except:
             pass
+=======
+        self.click_tile(i, j)
+        # print(self)
+        if self.env is not None:
+            self.assert_state(self.env)
+>>>>>>> 4cb13c907ca5aa187d5200adc5722ad3928e7e2a
 
     def assert_state(self, env):
         for i in range(self.size):
@@ -111,6 +121,11 @@ if __name__ == "__main__":
         list_flag.append(coor)
 
     board = Board(size, list_bomb)
+<<<<<<< HEAD
+=======
+    print(board)
+    print()
+>>>>>>> 4cb13c907ca5aa187d5200adc5722ad3928e7e2a
 
     env = Environment()
     board.env = env
@@ -120,7 +135,32 @@ if __name__ == "__main__":
     rule = """
     (defrule open-tile-program
         (aman ?x ?y)
+        (not (siku ?x ?y))
         (not (open ?x ?y))
+        (size ?n)
+        (test (>= ?x 0))
+        (test (< ?x ?n))
+        (test (>= ?y 0))
+        (test (< ?y ?n))
+        (using-program)
+        =>
+        (printout t "(" ?x " , "  ?y ")" crlf)
+        (click_tile ?x ?y)
+    )
+    """
+    
+    rule2 = """
+    (defrule open-tile-program-non-flag
+        (declare (salience -10))
+        (inboard ?x ?y)
+        (not (siku ?x ?y))
+        (not (flag ?x ?y))
+        (not (open ?x ?y))
+        (size ?n)
+        (test (>= ?x 0))
+        (test (< ?x ?n))
+        (test (>= ?y 0))
+        (test (< ?y ?n))
         (using-program)
         =>
         (printout t "(" ?x " , "  ?y ")" crlf)
@@ -129,12 +169,29 @@ if __name__ == "__main__":
     """
     
     env.reset()
+
+    for i in range(size):
+        for j in range(size):
+            env.assert_string(f'(inboard {i} {j})')
+
     env.build(rule)
+    env.build(rule2)
+
     env.assert_string('(using-program)')
     env.assert_string('(size {})'.format(size))
     env.run()
+
+<<<<<<< HEAD
+    print()
+    print(board)
+    print('\nList bomb:')
+    print(board.list_bomb)
+=======
+    # for fact in env.facts():
+    #     print(fact)
 
     print()
     print(board)
     print('\nList bomb:')
     print(board.list_bomb)
+>>>>>>> 4cb13c907ca5aa187d5200adc5722ad3928e7e2a

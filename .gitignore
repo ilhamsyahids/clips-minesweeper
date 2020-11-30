@@ -1,2 +1,6 @@
 .vscode/
+<<<<<<< HEAD
 __pycache__
+=======
+__pycache__/
+>>>>>>> 4cb13c907ca5aa187d5200adc5722ad3928e7e2a
