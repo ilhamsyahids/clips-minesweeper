@@ -1,6 +1,7 @@
 from tkinter import *
 from functools import partial
 from tkinter import ttk
+from main import Board
 
 # COLORS
 BLUE_GRAY = "#B0BEC5"
@@ -27,9 +28,10 @@ LABEL_COLORS = [LIGHT_GRAY, BLUE, GREEN, RED, DARK_BLUE, DARK_RED, TOSCA, DARK_G
 
 class Window(object):
 
-    def __init__(self, master):
+    def __init__(self, master, board):
         # Setup main window
         self.master = master
+        self.board = board
         self.master.title("Minesweeper")
         self.master.resizable(True, True)
         window_width = 960
@@ -56,7 +58,7 @@ class Window(object):
 
         self.var_board_size = IntVar()
         self.var_board_size.set(8)
-        self.scale_board_size = Scale(self.frame_menu, variable=self.var_board_size, from_=4, to=10, orient=HORIZONTAL)
+        self.scale_board_size = Scale(self.frame_menu, variable=self.var_board_size, from_=6, to=10, orient=HORIZONTAL)
         self.scale_board_size.grid(row=i_row, column=0, sticky="we")
         i_row += 1
 
@@ -95,7 +97,7 @@ class Window(object):
         self.board_size = self.var_board_size.get()
         self.list_bomb = []
         self.list_flag = []
-        self.test_game() # !!! TESTING !!!
+        # self.test_game() # !!! TESTING !!!
 
         # BOARD FRAME
         self.frame_board = Frame(self.master)
@@ -127,7 +129,18 @@ class Window(object):
                 self.tiles[i][j].grid_columnconfigure(0, weight=1)
 
 if __name__ == "__main__":
+    size = int(input())
+
+    list_bomb = []
+    list_flag = []
+    for i in range(int(input())):
+        coor = tuple(map(int, input().split(', ')))
+        list_bomb.append(coor)
+        list_flag.append(coor)
+
+    board = Board(size, list_bomb)
+
     app = Tk()
-    Window = Window(app)
+    Window = Window(app, board)
     app.mainloop()
     
