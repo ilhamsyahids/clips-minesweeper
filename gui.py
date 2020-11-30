@@ -142,7 +142,32 @@ if __name__ == "__main__":
     rule = """
     (defrule open-tile-program
         (aman ?x ?y)
+        (not (siku ?x ?y))
         (not (open ?x ?y))
+        (size ?n)
+        (test (>= ?x 0))
+        (test (< ?x ?n))
+        (test (>= ?y 0))
+        (test (< ?y ?n))
+        (using-program)
+        =>
+        (printout t "(" ?x " , "  ?y ")" crlf)
+        (click_tile ?x ?y)
+    )
+    """
+    
+    rule2 = """
+    (defrule open-tile-program-non-flag
+        (declare (salience -10))
+        (inboard ?x ?y)
+        (not (siku ?x ?y))
+        (not (flag ?x ?y))
+        (not (open ?x ?y))
+        (size ?n)
+        (test (>= ?x 0))
+        (test (< ?x ?n))
+        (test (>= ?y 0))
+        (test (< ?y ?n))
         (using-program)
         =>
         (printout t "(" ?x " , "  ?y ")" crlf)
@@ -151,7 +176,14 @@ if __name__ == "__main__":
     """
 
     env.reset()
+
+    for i in range(size):
+        for j in range(size):
+            env.assert_string(f'(inboard {i} {j})')
+
     env.build(rule)
+    env.build(rule2)
+
     env.assert_string('(using-program)')
     env.assert_string('(size {})'.format(size))
     env.run()
