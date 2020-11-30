@@ -173,4 +173,6 @@ if __name__ == "__main__":
     #     print(fact)
 
     print()
+    print(board)
+    print('\nList bomb:')
     print(board.list_bomb)
