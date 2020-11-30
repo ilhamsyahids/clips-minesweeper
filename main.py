@@ -172,4 +172,12 @@ if __name__ == "__main__":
     print()
     print(board)
     print('\nList bomb:')
-    print(board.list_bomb)
+    env.build('''
+    (defrule print-bomb
+        (inboard ?x ?y)
+        (not (open ?x ?y))
+        =>
+        (printout t ?x " " ?y crlf)
+    )
+    ''')
+    env.run()
