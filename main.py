@@ -83,10 +83,12 @@ class Board:
                         self.click_tile(i + x, j + y, False)
 
     def click_tile_env(self, i, j):
-        self.click_tile(i, j)
-        print(self)
-        if self.env is not None:
-            self.assert_state(self.env)
+        try:
+            self.click_tile(i, j)
+            if self.env is not None:
+                self.assert_state(self.env)
+        except:
+            pass
 
     def assert_state(self, env):
         for i in range(self.size):
@@ -109,12 +111,6 @@ if __name__ == "__main__":
         list_flag.append(coor)
 
     board = Board(size, list_bomb)
-    print(board)
-    print()
-    # board.click_tile(0,6)
-    # board.click_tile(0, 0)
-    # board.mark_tile((0, 6))
-    # board.unmark_tile((0, 6))
 
     env = Environment()
     board.env = env
@@ -137,6 +133,8 @@ if __name__ == "__main__":
     env.assert_string('(using-program)')
     env.assert_string('(size {})'.format(size))
     env.run()
-    # for fact in env.facts():
-    #     print(fact)
-    # print(board)
+
+    print()
+    print(board)
+    print('\nList bomb:')
+    print(board.list_bomb)
