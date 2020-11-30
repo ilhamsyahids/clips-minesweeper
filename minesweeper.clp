@@ -2,17 +2,12 @@
     (aman 0 0)
 )
 
-(deffacts initial-states 
-    (open 1 1)
-    (open 2 1)
-)
-
 (defrule open-tile
     (aman ?x ?y)
     (not (open ?x ?y))
+    (not (using-program))
     =>
-    (printout t "(" ?x " , "  ?y ")" crlf)
-    ; (click_tile ?x ?y)  ;TEST lagi
+    (printout t "(1" ?x " , "  ?y ")" crlf)
 )
 
 (defrule pattern11-vertical-1

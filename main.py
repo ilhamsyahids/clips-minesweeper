@@ -7,6 +7,7 @@ class Board:
         self.size = size
         self.board = [[0 for i in range(size)] for j in range(size)]
         self.board_open = [[0 for i in range(size)] for j in range(size)]
+        self.board_open_asserted = [[False for i in range(size)] for j in range(size)]
         self.list_bomb = list_bomb
         self.list_flag = []
         self.create_numbers()
@@ -27,16 +28,18 @@ class Board:
             s += '\n'
         return s.strip()
 
+    def is_in_board(self, i, j):
+        return i>=0 and i<self.size and j>=0 and j<self.size
+
     def create_numbers(self):
         for coor in self.list_bomb:
             self.board[coor[0]][coor[1]] = -1
-        n = self.size
         for coor in self.list_bomb:
             i = coor[0]
             j = coor[1]
             for x in range(-1, 2):
                 for y in range(-1, 2):
-                    if ((i + x >= 0) and (i + x < n) and (j + y >= 0) and (j + y < n)):
+                    if self.is_in_board(i + x, j + y):
                         if (self.board[i + x][j + y] != -1):
                             self.board[i + x][j + y] += 1
 
@@ -58,7 +61,12 @@ class Board:
         self.board_open[i][j] = 0
 
     def click_tile(self, i, j, base=True):
-        print('Click tile ({}, {})'.format(i,j))
+        if base:
+            print('Click tile ({}, {})'.format(i,j))
+        if not self.is_in_board(i, j):
+            print('[ERROR] click outside board')
+            return
+
         if base and self.board[i][j] == -1:
             print('Game Over')
             exit(1)
@@ -70,21 +78,24 @@ class Board:
             return
         for x in range(-1, 2):
             for y in range(-1, 2):
-                if ((i + x >= 0) and (i + x < self.size) and (j + y >= 0) and (j + y < self.size)):
+                if self.is_in_board(i + x, j + y):
                     if (not self.board_open[i+x][j+y]):
                         self.click_tile(i + x, j + y, False)
-        if base:
-            print(self)
-            if self.env is not None:
-                self.assert_state(self.env)
+
+    def click_tile_env(self, i, j):
+        self.click_tile(i, j)
+        print(self)
+        if self.env is not None:
+            self.assert_state(self.env)
 
     def assert_state(self, env):
         for i in range(self.size):
             for j in range(self.size):
-                if self.board_open[i][j] == 1:
+                if self.board_open[i][j] == 1 and not self.board_open_asserted[i][j]:
                     env.assert_string("(open {} {})".format(i, j))
                     env.assert_string(
                         '(value {} {} {})'.format(i, j, self.board[i][j]))
+                    self.board_open_asserted[i][j] = True
 
 
 if __name__ == "__main__":
@@ -101,17 +112,31 @@ if __name__ == "__main__":
     print(board)
     print()
     # board.click_tile(0,6)
-    board.click_tile(0, 0)
+    # board.click_tile(0, 0)
     # board.mark_tile((0, 6))
     # board.unmark_tile((0, 6))
 
     env = Environment()
     board.env = env
-    env.define_function(board.click_tile, 'click_tile')
     env.load('minesweeper.clp')
-    board.assert_state(env)
+    
+    env.define_function(board.click_tile_env, 'click_tile')
+    rule = """
+    (defrule open-tile-program
+        (aman ?x ?y)
+        (not (open ?x ?y))
+        (using-program)
+        =>
+        (printout t "(" ?x " , "  ?y ")" crlf)
+        (click_tile ?x ?y)
+    )
+    """
+    
     env.reset()
+    env.build(rule)
+    env.assert_string('(using-program)')
+    env.assert_string('(size {})'.format(size))
     env.run()
-    for fact in env.facts():
-        print(fact)
-    print(board)
+    # for fact in env.facts():
+    #     print(fact)
+    # print(board)
